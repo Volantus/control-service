@@ -1,9 +1,13 @@
 <?php
 namespace Volantus\OrientationControlService\Src\Networking;
 
+use Symfony\Component\Console\Output\OutputInterface;
 use Volantus\FlightBase\Src\Client\ClientService;
+use Volantus\FlightBase\Src\General\Motor\IncomingMotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Src\Server\Messaging\IncomingMessage;
+use Volantus\FlightBase\Src\Server\Messaging\MessageService;
+use Volantus\OrientationControlService\Src\Orientation\PwmController;
 
 /**
  * Class MessageHandler
@@ -18,9 +22,24 @@ class MessageHandler extends ClientService
     protected $clientRole = ClientRole::ORIENTATION_CONTROL_SERVICE;
 
     /**
+     * @var PwmController
+     */
+    private $pwmController;
+
+    public function __construct(OutputInterface $output, MessageService $messageService, PwmController $pwmController = null)
+    {
+        parent::__construct($output, $messageService);
+        $this->pwmController = $pwmController ?: new PwmController();
+    }
+
+    /**
      * @param IncomingMessage $incomingMessage
      */
     public function handleMessage(IncomingMessage $incomingMessage)
     {
+        if ($incomingMessage instanceof IncomingMotorControlMessage) {
+            $this->writeInfoLine('MessageHandler', 'Received motor control message => setting PWM signals');
+            $this->pwmController->handleControlMessage($incomingMessage->getMotorControl());
+        }
     }
 }
