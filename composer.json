@@ -1,0 +1,28 @@
+{
+  "name": "volantus/orientation-control-service",
+  "description": "Single point convey service for desired flight orientation (roll/pitch/yaw)",
+  "type": "project",
+  "license": "GNUv3",
+  "authors": [
+    {
+      "name": "Marius Meißner",
+      "email": "info@marius-meissner.net"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "nesbot/carbon": "^1.21",
+    "symfony/console": "^3.2",
+    "vlucas/phpdotenv": "^2.4",
+    "volantus/flight-base": "^1.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Volantus\\OrientationControlService\\Src\\": "src",
+      "Volantus\\OrientationControlService\\Tests\\": "tests"
+    }
+  }
+}
