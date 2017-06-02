@@ -8,7 +8,7 @@ use Volantus\FlightBase\Src\General\Motor\MotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Tests\Client\ClientServiceTest;
 use Volantus\OrientationControlService\Src\Networking\MessageHandler;
-use Volantus\OrientationControlService\Src\Orientation\PwmController;
+use Volantus\OrientationControlService\Src\Orientation\OrientationController;
 
 /**
  * Class MessageHandlerTest
@@ -18,13 +18,13 @@ use Volantus\OrientationControlService\Src\Orientation\PwmController;
 class MessageHandlerTest extends ClientServiceTest
 {
     /**
-     * @var PwmController|\PHPUnit_Framework_MockObject_MockObject
+     * @var OrientationController|\PHPUnit_Framework_MockObject_MockObject
      */
     private $pwmController;
 
     protected function setUp()
     {
-        $this->pwmController = $this->getMockBuilder(PwmController::class)->disableOriginalConstructor()->getMock();
+        $this->pwmController = $this->getMockBuilder(OrientationController::class)->disableOriginalConstructor()->getMock();
         parent::setUp();
     }
 

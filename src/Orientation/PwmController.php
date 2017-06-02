@@ -9,7 +9,7 @@ use Volantus\FlightBase\Src\General\Network\Socket;
  *
  * @package Volantus\OrientationControlService\Src\Orientation
  */
-class PwmController
+class PwmController implements OrientationController
 {
     const ZERO_LEVEL   = 1000;
     const MIDDLE_LEVEL = 1500;

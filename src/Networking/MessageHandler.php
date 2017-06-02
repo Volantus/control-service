@@ -7,6 +7,7 @@ use Volantus\FlightBase\Src\General\Motor\IncomingMotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Src\Server\Messaging\IncomingMessage;
 use Volantus\FlightBase\Src\Server\Messaging\MessageService;
+use Volantus\OrientationControlService\Src\Orientation\OrientationController;
 use Volantus\OrientationControlService\Src\Orientation\PwmController;
 
 /**
@@ -22,11 +23,11 @@ class MessageHandler extends ClientService
     protected $clientRole = ClientRole::ORIENTATION_CONTROL_SERVICE;
 
     /**
-     * @var PwmController
+     * @var OrientationController
      */
     private $pwmController;
 
-    public function __construct(OutputInterface $output, MessageService $messageService, PwmController $pwmController = null)
+    public function __construct(OutputInterface $output, MessageService $messageService, OrientationController $pwmController = null)
     {
         parent::__construct($output, $messageService);
         $this->pwmController = $pwmController ?: new PwmController();
