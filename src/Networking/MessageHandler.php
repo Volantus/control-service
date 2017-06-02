@@ -7,6 +7,7 @@ use Volantus\FlightBase\Src\General\Motor\IncomingMotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Src\Server\Messaging\IncomingMessage;
 use Volantus\FlightBase\Src\Server\Messaging\MessageService;
+use Volantus\OrientationControlService\Src\Orientation\MspAdapter;
 use Volantus\OrientationControlService\Src\Orientation\OrientationController;
 use Volantus\OrientationControlService\Src\Orientation\PwmAdapter;
 
@@ -34,7 +35,7 @@ class MessageHandler extends ClientService
 
         if ($this->orientationController == null) {
             if (getenv('RECEIVER_PROTOCOL') === 'MSP') {
-                // To-Do: Implement MSP protocol adapter
+                $this->orientationController = new OrientationController(new MspAdapter());
             } else {
                 $this->orientationController = new OrientationController(new PwmAdapter());
             }
