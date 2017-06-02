@@ -4,43 +4,42 @@ namespace Volantus\OrientationControlService\Tests\Orientation;
 use Volantus\FlightBase\Src\General\GyroStatus\GyroStatus;
 use Volantus\FlightBase\Src\General\Motor\MotorControlMessage;
 use Volantus\FlightBase\Src\General\Network\Socket;
+use Volantus\OrientationControlService\Src\Orientation\ChannelCollection;
+use Volantus\OrientationControlService\Src\Orientation\OrientationController;
 use Volantus\OrientationControlService\Src\Orientation\PwmController;
 use Volantus\OrientationControlService\Src\Orientation\PwmPinConfig;
+use Volantus\OrientationControlService\Src\Orientation\ReceiverProtocolAdapter;
 
 /**
  * Class PwmControllerTest
  *
  * @package Volantus\OrientationControlService\Tests\Orientation
  */
-class PwmControllerTest extends \PHPUnit_Framework_TestCase
+class OrientationControllerTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var Socket|\PHPUnit_Framework_MockObject_MockObject
+     * @var ReceiverProtocolAdapter|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $socket;
+    private $protocolAdapter;
 
     /**
-     * @var PwmPinConfig
-     */
-    private $pinConfig;
-
-    /**
-     * @var PwmController
+     * @var OrientationController
      */
     private $controller;
 
     protected function setUp()
     {
-        $this->socket = $this->getMockBuilder(Socket::class)->disableOriginalConstructor()->getMock();
-        $this->pinConfig = new PwmPinConfig(1, 2, 3, 4, 5, 6, 7, 8);
-        $this->controller = new PwmController($this->socket, $this->pinConfig);
+        $this->protocolAdapter = $this->getMockBuilder(ReceiverProtocolAdapter::class)->getMock();
+        $this->controller = new OrientationController($this->protocolAdapter);
     }
 
-    public function test_handleControlMessage_motorsNotStared_disarmSignalSend()
+    public function test_handleControlMessage_motorsNotStared_disarmSignalCorrect()
     {
-        $this->socket->expects(self::at(0))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAux1(), PwmController::MOTOR_DISARM_LEVEL, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals([1 => OrientationController::MOTOR_DISARM_LEVEL], $channelCollection->getAuxChannels());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(1, 2, 3), 0.5, 0, false);
         $this->controller->handleControlMessage($message);
@@ -48,19 +47,23 @@ class PwmControllerTest extends \PHPUnit_Framework_TestCase
 
     public function test_handleControlMessage_motorsNotStared_throttleSetToZeroLevel()
     {
-        $this->socket->expects(self::at(1))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getThrottle(), PwmController::ZERO_LEVEL, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals(OrientationController::ZERO_LEVEL, $channelCollection->getThrottle());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(1, 2, 3), 0.5, 0, false);
         $this->controller->handleControlMessage($message);
     }
 
-    public function test_handleControlMessage_motorsStared_motorsArmed()
+    public function test_handleControlMessage_motorsStared_motorsArmSignalCorrect()
     {
-        $this->socket->expects(self::at(0))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAux1(), PwmController::MOTOR_ARM_LEVEL, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals([1 => OrientationController::MOTOR_ARM_LEVEL], $channelCollection->getAuxChannels());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(1, 2, 3), 0.5, 0, true);
         $this->controller->handleControlMessage($message);
@@ -68,61 +71,49 @@ class PwmControllerTest extends \PHPUnit_Framework_TestCase
 
     public function test_handleControlMessage_motorsStared_throttleCorrect()
     {
-        $this->socket->expects(self::at(1))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getThrottle(), 1756, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals(1756, $channelCollection->getThrottle());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(1, 2, 3), 0.75555, 0, true);
         $this->controller->handleControlMessage($message);
     }
 
-    public function test_handleControlMessage_yawAppliedCorrectly()
+    public function test_handleControlMessage_yawCalculatedCorrectly()
     {
-        $this->socket->expects(self::at(2))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getYaw(), 1417, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals(1417, $channelCollection->getYaw());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(-30, 2, 3), 0.5, 0, true);
         $this->controller->handleControlMessage($message);
     }
 
-    public function test_handleControlMessage_pitchAppliedCorrectly()
+    public function test_handleControlMessage_pitchCalculatedCorrectly()
     {
-        $this->socket->expects(self::at(3))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getPitch(), 1500, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals(1500, $channelCollection->getPitch());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(90, 45, 0), 0.5, 0, true);
         $this->controller->handleControlMessage($message);
     }
 
-    public function test_handleControlMessage_rollAppliedCorrectly()
+    public function test_handleControlMessage_rollCalculatedCorrectly()
     {
-        $this->socket->expects(self::at(4))
+        $this->protocolAdapter->expects(self::once())
             ->method('send')
-            ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getRoll(), 1625, 0)));
+            ->will(self::returnCallback(function (ChannelCollection $channelCollection) {
+                self::assertEquals(1625, $channelCollection->getRoll());
+            }));
 
         $message = new MotorControlMessage(new GyroStatus(1, 45, 3), 0.5, 0, true);
-        $this->controller->handleControlMessage($message);
-    }
-
-    public function test_handleControlMessage_socketCleaned()
-    {
-        $this->socket->expects(self::at(5))->method('listen');
-
-        $message = new MotorControlMessage(new GyroStatus(1, 2, 3), 0.5, 0, true);
-        $this->controller->handleControlMessage($message);
-    }
-
-    public function test_handleControlMessage_dutyCycleOnlySetOnChange()
-    {
-        // +5 for first full set
-        // +1 for changed throttle
-        $this->socket->expects(self::exactly(6))->method('send');
-
-        $message = new MotorControlMessage(new GyroStatus(10, 20, 30), 0.5, 0, true);
-        $this->controller->handleControlMessage($message);
-        $message = new MotorControlMessage(new GyroStatus(10, 20, 30), 0.6, 0, true);
         $this->controller->handleControlMessage($message);
     }
 }

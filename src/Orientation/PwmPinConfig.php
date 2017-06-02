@@ -29,24 +29,9 @@ class PwmPinConfig
     private $yaw;
 
     /**
-     * @var int
+     * @var array
      */
-    private $aux1;
-
-    /**
-     * @var int
-     */
-    private $aux2;
-
-    /**
-     * @var int
-     */
-    private $aux3;
-
-    /**
-     * @var int
-     */
-    private $aux4;
+    private $auxChannels;
 
     /**
      * PwmPinConfig constructor.
@@ -66,10 +51,12 @@ class PwmPinConfig
         $this->pitch = $pitch ?: $this->fetchFromEnv('PITCH');
         $this->roll = $roll ?: $this->fetchFromEnv('ROLL');
         $this->yaw = $yaw ?: $this->fetchFromEnv('YAW');
-        $this->aux1 = $aux1 ?: $this->fetchFromEnv('AUX1');
-        $this->aux2 = $aux2 ?: $this->fetchFromEnv('AUX2');
-        $this->aux3 = $aux3 ?: $this->fetchFromEnv('AUX3');
-        $this->aux4 = $aux4 ?: $this->fetchFromEnv('AUX4');
+        $this->auxChannels = [
+            1 => $aux1 ?: $this->fetchFromEnv('AUX1'),
+            2 => $aux2 ?: $this->fetchFromEnv('AUX2'),
+            3 => $aux3 ?: $this->fetchFromEnv('AUX3'),
+            4 => $aux4 ?: $this->fetchFromEnv('AUX4')
+        ];
     }
 
     /**
@@ -121,34 +108,10 @@ class PwmPinConfig
     }
 
     /**
-     * @return int
+     * @return array
      */
-    public function getAux1(): int
+    public function getAuxChannels(): array
     {
-        return $this->aux1;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAux2(): int
-    {
-        return $this->aux2;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAux3(): int
-    {
-        return $this->aux3;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAux4(): int
-    {
-        return $this->aux4;
+        return $this->auxChannels;
     }
 }

@@ -8,7 +8,7 @@ use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Src\Server\Messaging\IncomingMessage;
 use Volantus\FlightBase\Src\Server\Messaging\MessageService;
 use Volantus\OrientationControlService\Src\Orientation\OrientationController;
-use Volantus\OrientationControlService\Src\Orientation\PwmController;
+use Volantus\OrientationControlService\Src\Orientation\PwmAdapter;
 
 /**
  * Class MessageHandler
@@ -25,12 +25,20 @@ class MessageHandler extends ClientService
     /**
      * @var OrientationController
      */
-    private $pwmController;
+    private $orientationController;
 
-    public function __construct(OutputInterface $output, MessageService $messageService, OrientationController $pwmController = null)
+    public function __construct(OutputInterface $output, MessageService $messageService, OrientationController $orientationController = null)
     {
         parent::__construct($output, $messageService);
-        $this->pwmController = $pwmController ?: new PwmController();
+        $this->orientationController = $orientationController;
+
+        if ($this->orientationController == null) {
+            if (getenv('RECEIVER_PROTOCOL') === 'MSP') {
+                // To-Do: Implement MSP protocol adapter
+            } else {
+                $this->orientationController = new OrientationController(new PwmAdapter());
+            }
+        }
     }
 
     /**
@@ -40,7 +48,7 @@ class MessageHandler extends ClientService
     {
         if ($incomingMessage instanceof IncomingMotorControlMessage) {
             $this->writeInfoLine('MessageHandler', 'Received motor control message => setting PWM signals');
-            $this->pwmController->handleControlMessage($incomingMessage->getMotorControl());
+            $this->orientationController->handleControlMessage($incomingMessage->getMotorControl());
         }
     }
 }
