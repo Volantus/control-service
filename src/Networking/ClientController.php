@@ -23,5 +23,6 @@ class ClientController extends \Volantus\FlightBase\Src\Client\ClientController
         parent::__construct($output, $service ?: new MessageHandler($output, new MessageService()));
 
         $this->connectToRelayServer();
+        $this->connectToMspServer();
     }
 }
