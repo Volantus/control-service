@@ -46,7 +46,7 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_pitchSetCorrectly()
     {
-        $this->socket->expects(self::at(2))
+        $this->socket->expects(self::at(4))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getPitch(), 1200, 0)));
 
@@ -56,7 +56,7 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_rollSetCorrectly()
     {
-        $this->socket->expects(self::at(3))
+        $this->socket->expects(self::at(6))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getRoll(), 1200, 0)));
 
@@ -66,7 +66,7 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_yawSetCorrectly()
     {
-        $this->socket->expects(self::at(1))
+        $this->socket->expects(self::at(2))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getYaw(), 1200, 0)));
 
@@ -76,7 +76,7 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_socketCleaned()
     {
-        $this->socket->expects(self::at(4))->method('listen');
+        $this->socket->expects(self::exactly(4))->method('listen');
 
         $channelCollection = new ChannelCollection(1000, 1000, 1000, 1000, []);
         $this->adapter->send($channelCollection);
@@ -84,19 +84,19 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_auxSendCorrectly()
     {
-        $this->socket->expects(self::at(4))
+        $this->socket->expects(self::at(8))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAuxChannels()[1], 1100, 0)));
 
-        $this->socket->expects(self::at(5))
+        $this->socket->expects(self::at(10))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAuxChannels()[2], 1200, 0)));
 
-        $this->socket->expects(self::at(6))
+        $this->socket->expects(self::at(12))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAuxChannels()[3], 1300, 0)));
 
-        $this->socket->expects(self::at(7))
+        $this->socket->expects(self::at(14))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAuxChannels()[4], 1400, 0)));
 
@@ -106,11 +106,11 @@ class PwmAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function test_send_onlyExistingAuxChannelsSet()
     {
-        $this->socket->expects(self::at(4))
+        $this->socket->expects(self::at(8))
             ->method('send')
             ->with(self::equalTo(pack('L*', 8, $this->pinConfig->getAuxChannels()[2], 1200, 0)));
 
-        $this->socket->expects(self::at(5))->method('listen');
+        $this->socket->expects(self::at(9))->method('listen');
 
         $channelCollection = new ChannelCollection(1000, 1000, 1000, 1000, [2 => 1200]);
         $this->adapter->send($channelCollection);

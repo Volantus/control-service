@@ -70,8 +70,6 @@ class PwmAdapter implements ReceiverProtocolAdapter
                 throw new AuxChannelOutOfRangeException('Aux channel ' . $channelId . ' is not supported by PWM protocol adapter (1-4 only)');
             }
         }
-
-        $this->socket->listen();
     }
 
     /**
@@ -83,6 +81,7 @@ class PwmAdapter implements ReceiverProtocolAdapter
         if ($this->currentDutyCycles[$pin] != $dutyCycle) {
             $message = pack('L*', 8, $pin, $dutyCycle, 0);
             $this->socket->send($message);
+            $this->socket->listen();
 
             $this->currentDutyCycles[$pin] = $dutyCycle;
         }
