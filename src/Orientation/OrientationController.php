@@ -61,6 +61,14 @@ class OrientationController
     }
 
     /**
+     * @return ReceiverProtocolAdapter
+     */
+    public function getAdapter(): ReceiverProtocolAdapter
+    {
+        return $this->adapter;
+    }
+
+    /**
      * @param float $degrees
      *
      * @return int

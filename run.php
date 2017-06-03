@@ -8,5 +8,5 @@ $dotEnv = new Dotenv(__DIR__);
 $dotEnv->load();
 
 $application = new Application();
-$application->add(new \Volantus\GyroStatusService\Src\CLI\ServiceCommand());
+$application->add(new \Volantus\OrientationControlService\Src\CLI\ServiceCommand());
 $application->run();

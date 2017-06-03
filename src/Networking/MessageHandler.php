@@ -3,6 +3,7 @@ namespace Volantus\OrientationControlService\Src\Networking;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Volantus\FlightBase\Src\Client\ClientService;
+use Volantus\FlightBase\Src\Client\MspClientService;
 use Volantus\FlightBase\Src\General\Motor\IncomingMotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
 use Volantus\FlightBase\Src\Server\Messaging\IncomingMessage;
@@ -16,7 +17,7 @@ use Volantus\OrientationControlService\Src\Orientation\PwmAdapter;
  *
  * @package Volantus\OrientationControlService\Src\GyroStatus
  */
-class MessageHandler extends ClientService
+class MessageHandler extends MspClientService
 {
     /**
      * @var int
@@ -35,10 +36,15 @@ class MessageHandler extends ClientService
 
         if ($this->orientationController == null) {
             if (getenv('RECEIVER_PROTOCOL') === 'MSP') {
-                $this->orientationController = new OrientationController(new MspAdapter());
+                $mspAdapter = new MspAdapter();
+                $this->orientationController = new OrientationController($mspAdapter);
             } else {
                 $this->orientationController = new OrientationController(new PwmAdapter());
             }
+        }
+
+        if ($this->orientationController->getAdapter() instanceof MspAdapter) {
+            $this->mspRepositories[] = $this->orientationController->getAdapter();
         }
     }
 

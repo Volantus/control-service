@@ -6,8 +6,9 @@ use Volantus\FlightBase\Src\General\GyroStatus\GyroStatus;
 use Volantus\FlightBase\Src\General\Motor\IncomingMotorControlMessage;
 use Volantus\FlightBase\Src\General\Motor\MotorControlMessage;
 use Volantus\FlightBase\Src\General\Role\ClientRole;
-use Volantus\FlightBase\Tests\Client\ClientServiceTest;
+use Volantus\FlightBase\Tests\Client\MspClientServiceTest;
 use Volantus\OrientationControlService\Src\Networking\MessageHandler;
+use Volantus\OrientationControlService\Src\Orientation\MspAdapter;
 use Volantus\OrientationControlService\Src\Orientation\OrientationController;
 
 /**
@@ -15,16 +16,24 @@ use Volantus\OrientationControlService\Src\Orientation\OrientationController;
  *
  * @package Volantus\OrientationControlService\Tests\Networking
  */
-class MessageHandlerTest extends ClientServiceTest
+class MessageHandlerTest extends MspClientServiceTest
 {
+    /**
+     * @var MspAdapter|\PHPUnit_Framework_MockObject_MockObject
+     */
+    private $mspAdapter;
+
     /**
      * @var OrientationController|\PHPUnit_Framework_MockObject_MockObject
      */
-    private $pwmController;
+    private $orientationController;
 
     protected function setUp()
     {
-        $this->pwmController = $this->getMockBuilder(OrientationController::class)->disableOriginalConstructor()->getMock();
+        $this->mspAdapter = $this->getMockBuilder(MspAdapter::class)->disableOriginalConstructor()->getMock();
+        $this->orientationController = $this->getMockBuilder(OrientationController::class)->disableOriginalConstructor()->getMock();
+        $this->orientationController->method('getAdapter')->willReturn($this->mspAdapter);
+        $this->mspRepositories[] = $this->mspAdapter;
         parent::setUp();
     }
 
@@ -33,7 +42,7 @@ class MessageHandlerTest extends ClientServiceTest
      */
     protected function createService(): ClientService
     {
-        return new MessageHandler($this->dummyOutput, $this->messageService, $this->pwmController);
+        return new MessageHandler($this->dummyOutput, $this->messageService, $this->orientationController);
     }
 
     public function test_handleMessage_motorControlMessageHandledCorrectly()
@@ -44,7 +53,7 @@ class MessageHandlerTest extends ClientServiceTest
             ->method('handle')
             ->with($this->server, 'correct')->willReturn($message);
 
-        $this->pwmController->expects(self::once())
+        $this->orientationController->expects(self::once())
             ->method('handleControlMessage')
             ->with(self::equalTo($message->getMotorControl()));
 
